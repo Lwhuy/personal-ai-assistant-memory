@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "personal-assistant-memory"
+version = "0.1.0"
+description = "An inspectable, local personal assistant memory research MVP"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi>=0.159.1,<0.160",
+  "uvicorn>=0.40,<1",
+  "langgraph>=1.2.16,<1.3",
+  "httpx>=0.28.1,<0.29",
+  "pydantic-settings>=2.16.1,<3",
+  "streamlit>=1.66.1,<1.67",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.1.1,<10", "ruff>=0.17.1,<0.18"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/personal_assistant"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["ollama: optional live model evaluation (RUN_OLLAMA_TESTS=1)"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

@@ -1,0 +1,146 @@
+{
+  "pyproject.toml": {
+    "mtime": 1792649492.2256582,
+    "seen": 1792650527.471358,
+    "ast_hash": "41bf57667052c993f280feb507149e0b",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/__init__.py": {
+    "mtime": 1792649486.0288515,
+    "seen": 1792650527.471361,
+    "ast_hash": "40d1b6b9c83f8b43fa37bb1732bebf68",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/agent.py": {
+    "mtime": 1792650430.3503783,
+    "seen": 1792650527.471362,
+    "ast_hash": "9f45ea36af76b569ed15c003fc58de46",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/api.py": {
+    "mtime": 1792650103.2282727,
+    "seen": 1792650527.471363,
+    "ast_hash": "745c148e8f646e20b3a4f2356467cd62",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/config.py": {
+    "mtime": 1792649987.0566247,
+    "seen": 1792650527.4713652,
+    "ast_hash": "33cfd9fd30081f1a83943c0e63ed8053",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/extraction.py": {
+    "mtime": 1792650103.226404,
+    "seen": 1792650527.471366,
+    "ast_hash": "9c77e5ea1b2cf66f796b2b21c369c2d9",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/memory.py": {
+    "mtime": 1792650103.4389923,
+    "seen": 1792650527.471367,
+    "ast_hash": "166c15822d18fb17722b901296840489",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/models.py": {
+    "mtime": 1792649987.056784,
+    "seen": 1792650527.4713678,
+    "ast_hash": "ea8a230b0539df8331ff7264674c8490",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/provider.py": {
+    "mtime": 1792650103.2271934,
+    "seen": 1792650527.47137,
+    "ast_hash": "19b2fc46133fe5d630d2fc9bd7018df4",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/store.py": {
+    "mtime": 1792650359.7386165,
+    "seen": 1792650527.471371,
+    "ast_hash": "f58c9bdc4f5a1357b4cee977efe11e17",
+    "semantic_hash": ""
+  },
+  "streamlit_app.py": {
+    "mtime": 1792650430.3496878,
+    "seen": 1792650527.4713721,
+    "ast_hash": "590c5b05290bf63dcfec667b010ca686",
+    "semantic_hash": ""
+  },
+  "tests/__init__.py": {
+    "mtime": 1792649486.0289843,
+    "seen": 1792650527.471374,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "tests/fakes.py": {
+    "mtime": 1792649486.0292013,
+    "seen": 1792650527.471375,
+    "ast_hash": "cdc61ad02e64a8456b9f13ac5e535ea4",
+    "semantic_hash": ""
+  },
+  "tests/test_agent.py": {
+    "mtime": 1792650053.638788,
+    "seen": 1792650527.471376,
+    "ast_hash": "46bc4f77d3b71153d2dfe29472459466",
+    "semantic_hash": ""
+  },
+  "tests/test_api.py": {
+    "mtime": 1792649987.05861,
+    "seen": 1792650527.471377,
+    "ast_hash": "80fd0a75f132b4664332bc2c25d65e00",
+    "semantic_hash": ""
+  },
+  "tests/test_memory.py": {
+    "mtime": 1792650339.4439363,
+    "seen": 1792650527.4713778,
+    "ast_hash": "7dff027bfc1a96630f1e6e9b72c9e51e",
+    "semantic_hash": ""
+  },
+  "tests/test_ollama.py": {
+    "mtime": 1792650484.54198,
+    "seen": 1792650527.471379,
+    "ast_hash": "96e58ef5ba6f1e6f8f84ce5cf6bbf98b",
+    "semantic_hash": ""
+  },
+  "tests/test_provider.py": {
+    "mtime": 1792650053.6390572,
+    "seen": 1792650527.471381,
+    "ast_hash": "02233f6063a7b11420ea827e86c6448a",
+    "semantic_hash": ""
+  },
+  "tests/test_ui.py": {
+    "mtime": 1792650339.4447258,
+    "seen": 1792650527.471382,
+    "ast_hash": "9201c079d26e194a9b940297ab96b81a",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1792650484.195901,
+    "seen": 1792650527.471383,
+    "ast_hash": "cf94fc52655330848e6643d75036bcf1",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE.md": {
+    "mtime": 1792649416.2106533,
+    "seen": 1792650527.471384,
+    "ast_hash": "f6ec126ed10531ceeba88662dde7be92",
+    "semantic_hash": ""
+  },
+  "docs/MEMORY_LIFECYCLE.md": {
+    "mtime": 1792650431.613617,
+    "seen": 1792650527.471385,
+    "ast_hash": "2045fee56f204297a9e3cf6b8ae4ea50",
+    "semantic_hash": ""
+  },
+  "docs/MEMORY_RESEARCH.md": {
+    "mtime": 1792649416.2109516,
+    "seen": 1792650527.471387,
+    "ast_hash": "70919e159586089e9ed2f995185e9b36",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-22-memory-mvp.md": {
+    "mtime": 1792649416.21046,
+    "seen": 1792650527.4713888,
+    "ast_hash": "59067b9bff69cd4c683c20be77ae15f7",
+    "semantic_hash": ""
+  }
+}
