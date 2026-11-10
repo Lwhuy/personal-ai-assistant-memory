@@ -1,15 +1,18 @@
 {
   "0": "agent.py",
-  "1": "test_provider.py",
+  "1": "ProviderError",
   "2": "test_agent.py",
   "3": "MemoryStore",
-  "4": "Personal AI Assistant — Memory Lab",
+  "4": "AGENT_RESEARCH_2026-11-09.md",
   "5": "create_app",
   "6": "test_memory.py",
   "7": "Personal Assistant Memory Implementation Plan",
   "8": "personal_assistant/__init__.py",
   "9": "personal-assistant-memory",
   "10": "tests/__init__.py",
-  "11": "ProviderError",
-  "12": "test_ollama.py"
+  "11": "evaluation.py",
+  "12": "Repository Guidelines",
+  "13": "Memory Reliability Implementation Plan",
+  "14": "Memory reliability milestone",
+  "15": "Memory architecture research"
 }

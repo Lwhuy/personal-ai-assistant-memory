@@ -105,6 +105,7 @@ with chat_tab:
             )
             st.json(
                 {
+                    "profile_memories": result["profile_memories"],
                     "retrieved_memories": result["retrieved_memories"],
                     "memory_events": result["memory_events"],
                 }
@@ -126,7 +127,9 @@ with memory_tab:
                 json={"key": key, "content": content, "memory_type": memory_type},
             )
             st.rerun()
-    query = st.text_input("Inspect semantic retrieval", key=f"search_{user_id}", max_chars=4000)
+    query = st.text_input(
+        "Inspect keyword/vector retrieval", key=f"search_{user_id}", max_chars=4000
+    )
     if query.strip():
         st.json(api("GET", base + "/memories/search", params={"query": query}))
     memories = api("GET", base + "/memories")
@@ -137,6 +140,9 @@ with memory_tab:
             st.caption(
                 f"Source conversation: {memory['source_session_id'] or 'explicit memory manager'}"
             )
+            if memory.get("source_quote"):
+                st.caption("Supporting user quote")
+                st.text(memory["source_quote"])
             with st.form("edit_" + memory["id"]):
                 new_key = st.text_input("Key", memory["key"], max_chars=64)
                 new_content = st.text_area("Content", memory["content"], max_chars=500)

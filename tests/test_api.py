@@ -116,3 +116,49 @@ def test_restart_via_fresh_app_preserves_memory(tmp_path):
             "/chat", json={"user_id": "alice", "session_id": "two", "message": "Explain decorators"}
         )
         assert response.json()["retrieved_memories"][0]["memory"]["key"] == "response_language"
+
+
+def test_profile_and_evidence_are_inspectable_but_cannot_be_forged(client):
+    text = "I prefer Vietnamese."
+    client.app.state.assistant.provider.extractions[text] = [
+        candidate("response_language", "Prefers Vietnamese", text)
+    ]
+    result = client.post(
+        "/chat",
+        json={
+            "user_id": "alice",
+            "session_id": "one",
+            "message": text,
+            "remember": True,
+        },
+    ).json()
+    assert result["profile_memories"][0]["source_quote"] == text
+    memory_id = result["profile_memories"][0]["id"]
+    result = client.post(
+        "/chat",
+        json={
+            "user_id": "alice",
+            "session_id": "two",
+            "message": "How far away is the Moon?",
+        },
+    ).json()
+    assert result["profile_memories"][0]["id"] == memory_id
+    assert result["retrieved_memories"] == []
+    forged = client.post(
+        "/users/alice/memories",
+        json={
+            "key": "editor_preference",
+            "content": "Vim",
+            "source_quote": "I use Vim.",
+        },
+    )
+    assert forged.status_code == 422
+    edited = client.put(
+        f"/users/alice/memories/{memory_id}",
+        json={
+            "key": "response_language",
+            "content": "Prefers English",
+        },
+    ).json()
+    assert edited["source_quote"] is None
+    assert edited["source_session_id"] is None

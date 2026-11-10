@@ -1,5 +1,76 @@
 # Evaluation
 
+## Memory reliability update — 2026-11-09
+
+The update adds an always-supplied response-language profile, keyword/vector rank fusion,
+retained supporting quotes, and an opt-in paired evaluation. Verified in this workspace:
+
+| Check | Result |
+|---|---|
+| `uv run pytest -q` | **82 passed, 1 skipped**; external provider replaced, real store/workflow/API/UI |
+| `uv run ruff check .` | Passed |
+| `uv run ruff format --check .` | Passed |
+| `uv build` | Passed; the wheel includes the evaluation runner and JSON corpus. |
+| Paired live evaluation CLI | **Blocked**: Ollama unreachable; exited with an actionable error. No live scores generated. |
+
+New regressions cover exact-name retrieval with orthogonal query vectors, unique hybrid hits,
+FTS syntax escaping/Vietnamese input, all index deletion paths, legacy database backfill,
+evidence persistence/invalidation, old-writer compatibility, unrelated-question profile recall,
+deduplication and current-message placement, API attribution controls, UI quote/profile inspection,
+and isolated paired evaluation. The evaluator test verifies byte-for-byte preservation of an
+existing configured database; it never opens that path during evaluation.
+
+Independent review found two issues, both reproduced with failing tests before correction:
+shared source quotes could retain a forgotten fact in another memory, and decomposed Vietnamese
+queries lost combining marks during tokenization. Mutations now invalidate all that user's quotes
+before saving any replacement evidence; queries normalize to NFC. Tests cover surviving profile
+prompts, CRUD, same-key upserts, legacy SQL mutations, and preservation of another user's evidence.
+
+### Run the paired corpus
+
+Start Ollama and download the configured chat/embedding models, then:
+
+```bash
+uv run python -m personal_assistant.evaluation --split dev --output data/memory-dev.json
+uv run python -m personal_assistant.evaluation --split test --output data/memory-test.json
+```
+
+`src/personal_assistant/eval_cases.json` contains 14 synthetic cases: 2 development and 12 test.
+Use development cases for prompt/threshold changes and leave the test split fixed for comparison.
+The corpus covers English/Vietnamese preference recall, unrelated questions, current-turn overrides,
+correction, exact names, cross-language recall, unknown facts, user isolation, forgetting, privacy,
+consent off, same-session history and misleading quotations. This is a small project-specific corpus,
+not LoCoMo/LongMemEval or a statistically representative quality estimate.
+
+Each case runs twice, history-only first and memory-enabled second. Models, system prompt, message
+sequence, history bounds and generation settings match. The baseline disables extraction writes;
+the memory arm respects each turn's consent. Each arm gets a fresh temporary database; an application
+object restart before the query checks persistence. The configured personal database is untouched.
+Most cases query a new session, so the history-only baseline cannot access the earlier conversation.
+The same-session control gives it a question it should answer from bounded history.
+
+Reports record model configuration, model digests, corpus SHA-256, per-case answers, supplied records,
+warnings, generation/extraction/embedding call timings and character counts. No prompt bodies are
+logged by the instrumentation; replay inputs and answers are synthetic report data. Review answers
+against each `answer_rubric` and fill `answer_grade` manually. Its initial null value means ungraded.
+
+| Metric | Interpretation and limit |
+|---|---|
+| `context_recall` | Fraction of expected keys supplied through profile/search; null for cases with no expected keys. Does not prove the right value or answer was used. |
+| `final_fact_precision_heuristic` | Fraction of final stored facts matching an expected key and one labeled value substring; memory arm only. Wrong values/extra facts lower it. No facts with none expected scores one. |
+| `final_fact_recall_heuristic` | Fraction of expected final facts matched by key/value substring; memory arm only. These final-state metrics do not measure per-extraction precision/recall or entailment. |
+| `lifecycle_pass` | Forbidden synthetic substrings absent from current memories/quotes and all replayed users' bounded histories after the query; null when no assertion is specified. Not forensic erasure or output-leakage grading. |
+| Query p50/p95 | Median and nearest-rank 95th-percentile wall time. Samples are few, history-only runs first, model warm-up/cache/order effects are uncontrolled. |
+| Provider calls/input characters | Recorded across seeding and querying; includes embedding input and chat message bodies. Excludes schema/role overhead and is **not** a token or cost estimate. |
+
+Summary quality-related metrics are macro averages over applicable cases. Review the per-case
+records: empty-state cases can make final-fact averages look good despite failed positive recall.
+No automated answer correctness, abstention, stale-answer rate or injection-resistance score is
+claimed. The fake-provider tests prove runner mechanics, not learned model behavior. When Ollama
+is unavailable, the command exits nonzero without replacing a completed report with fake scores.
+
+## Original MVP evaluation — 2026-10-22
+
 Recorded on 2026-10-22, macOS ARM64, Python 3.12.15. The reference implementations were inspected, not executed. Results below distinguish deterministic lifecycle proof, actual process startup, and live model quality.
 
 ## Executed checks
@@ -74,7 +145,7 @@ Known failure cases:
 
 - A valid supporting substring does not prove the content follows from it; false extraction is possible.
 - Different keys can encode the same topic and retain contradictions. Identical content for a different existing slot is an explicit collision, not automatically merged.
-- Cosine similarity can retrieve irrelevant facts or miss preferences; the threshold/top k need calibration. The default embedding model's multilingual quality is unmeasured.
+- Cosine similarity can retrieve irrelevant facts or miss preferences; the update guarantees context availability only for `response_language` and adds lexical rescue. Threshold/top k/fusion and multilingual quality remain unmeasured.
 - Fact correction/deletion clears every history for that user. This is intentionally coarse and sacrifices conversational continuity.
 - Input/output sensitivity and English privacy/forget phrases use limited heuristics. Unrecognized forget targets delete nothing; use CRUD.
 - Turning saving off does not disable recall or ordinary history retention. Provider-side retention and backups are outside local deletion.

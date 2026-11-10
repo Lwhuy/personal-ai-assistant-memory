@@ -30,6 +30,7 @@ class Memory(MemoryInput):
     id: str
     user_id: str
     source_session_id: str | None = None
+    source_quote: str | None = Field(default=None, min_length=3, max_length=1000)
     created_at: datetime
     updated_at: datetime
 
@@ -37,6 +38,8 @@ class Memory(MemoryInput):
 class RetrievedMemory(BaseModel):
     memory: Memory
     score: float
+    retrieval_method: Literal["semantic", "keyword", "hybrid"] = "semantic"
+    rank_score: float = 0.0
 
 
 class MemoryEvent(BaseModel):
@@ -58,5 +61,6 @@ class ChatResult(BaseModel):
     session_id: str
     answer: str
     retrieved_memories: list[RetrievedMemory] = Field(default_factory=list)
+    profile_memories: list[Memory] = Field(default_factory=list)
     memory_events: list[MemoryEvent] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)

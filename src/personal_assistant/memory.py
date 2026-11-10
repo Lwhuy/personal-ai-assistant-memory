@@ -1,4 +1,4 @@
-"""Memory validation and semantic retrieval, independent from chat orchestration."""
+"""Memory validation and hybrid retrieval, independent from chat orchestration."""
 
 import math
 import re
@@ -47,11 +47,24 @@ class MemoryService:
         self.top_k = top_k
         self.min_score = min_score
 
-    def save(self, user_id: str, item: MemoryInput, source_session_id: str | None = None):
-        if is_sensitive(f"{item.key} {item.content}"):
+    def save(
+        self,
+        user_id: str,
+        item: MemoryInput,
+        source_session_id: str | None = None,
+        *,
+        source_quote: str | None = None,
+    ):
+        if is_sensitive(f"{item.key} {item.content} {source_quote or ''}"):
             raise ValueError("Potentially sensitive information cannot be saved as memory.")
+        if source_quote is not None and (
+            not source_session_id or not 3 <= len(source_quote) <= 1000
+        ):
+            raise ValueError("Source evidence requires a conversation and a bounded quote.")
         vector = validate_vector(self.provider.embed(item.content))
-        return self.store.upsert(user_id, item, vector, source_session_id)
+        return self.store.upsert(
+            user_id, item, vector, source_session_id, source_quote=source_quote
+        )
 
     def update(self, user_id: str, memory_id: str, item: MemoryInput):
         if self.store.get(user_id, memory_id) is None:
@@ -66,7 +79,7 @@ class MemoryService:
         if not records:
             return []
         query_vector = validate_vector(self.provider.embed(query))
-        hits = []
+        scores = {}
         for memory, stored_vector in records:
             vector = validate_vector(stored_vector)
             if len(vector) != len(query_vector):
@@ -74,7 +87,20 @@ class MemoryService:
             score = max(
                 -1.0, min(1.0, sum(a * b for a, b in zip(vector, query_vector, strict=True)))
             )
-            if score >= self.min_score:
-                hits.append(RetrievedMemory(memory=memory, score=score))
-        hits.sort(key=lambda hit: (-hit.score, hit.memory.id))
-        return hits[: self.top_k]
+            scores[memory.id] = score
+        semantic = sorted(
+            (memory for memory, _ in records if scores[memory.id] >= self.min_score),
+            key=lambda memory: (-scores[memory.id], memory.id),
+        )[: self.top_k]
+        keyword = self.store.keyword_search(user_id, query, self.top_k)
+        hits = {}
+        for method, memories in (("semantic", semantic), ("keyword", keyword)):
+            for rank, memory in enumerate(memories, 1):
+                if memory.id not in hits:
+                    hits[memory.id] = RetrievedMemory(
+                        memory=memory, score=scores[memory.id], retrieval_method=method
+                    )
+                else:
+                    hits[memory.id].retrieval_method = "hybrid"
+                hits[memory.id].rank_score += 1 / (60 + rank)
+        return sorted(hits.values(), key=lambda hit: (-hit.rank_score, hit.memory.id))[: self.top_k]

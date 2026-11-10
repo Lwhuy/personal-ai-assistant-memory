@@ -1,8 +1,8 @@
 {
   "pyproject.toml": {
-    "mtime": 1792649492.2256582,
-    "seen": 1792650527.471358,
-    "ast_hash": "41bf57667052c993f280feb507149e0b",
+    "mtime": 1792682729.2778583,
+    "seen": 1794240979.989811,
+    "ast_hash": "b7a31eab0e7342bb1cb9c6c1b7872c95",
     "semantic_hash": ""
   },
   "src/personal_assistant/__init__.py": {
@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/personal_assistant/agent.py": {
-    "mtime": 1792650430.3503783,
-    "seen": 1792650527.471362,
-    "ast_hash": "9f45ea36af76b569ed15c003fc58de46",
+    "mtime": 1794240753.5701733,
+    "seen": 1794240979.9898171,
+    "ast_hash": "1141e7b51b0761730c1af2ab076310bd",
     "semantic_hash": ""
   },
   "src/personal_assistant/api.py": {
@@ -36,15 +36,15 @@
     "semantic_hash": ""
   },
   "src/personal_assistant/memory.py": {
-    "mtime": 1792650103.4389923,
-    "seen": 1792650527.471367,
-    "ast_hash": "166c15822d18fb17722b901296840489",
+    "mtime": 1794240753.5700488,
+    "seen": 1794240979.989826,
+    "ast_hash": "16b806ba08869989e2caadd5258c02d0",
     "semantic_hash": ""
   },
   "src/personal_assistant/models.py": {
-    "mtime": 1792649987.056784,
-    "seen": 1792650527.4713678,
-    "ast_hash": "ea8a230b0539df8331ff7264674c8490",
+    "mtime": 1794240539.5971527,
+    "seen": 1794240979.9898272,
+    "ast_hash": "6f49b03fbbdd6775c5697d5c331b684a",
     "semantic_hash": ""
   },
   "src/personal_assistant/provider.py": {
@@ -54,15 +54,15 @@
     "semantic_hash": ""
   },
   "src/personal_assistant/store.py": {
-    "mtime": 1792650359.7386165,
-    "seen": 1792650527.471371,
-    "ast_hash": "f58c9bdc4f5a1357b4cee977efe11e17",
+    "mtime": 1794242259.5020049,
+    "seen": 1794242339.371707,
+    "ast_hash": "2fdad9db8410a9837794e8392178084e",
     "semantic_hash": ""
   },
   "streamlit_app.py": {
-    "mtime": 1792650430.3496878,
-    "seen": 1792650527.4713721,
-    "ast_hash": "590c5b05290bf63dcfec667b010ca686",
+    "mtime": 1794240753.5697222,
+    "seen": 1794240979.989832,
+    "ast_hash": "83cf368f8613e2d0f62b1e7811af8fb8",
     "semantic_hash": ""
   },
   "tests/__init__.py": {
@@ -78,21 +78,21 @@
     "semantic_hash": ""
   },
   "tests/test_agent.py": {
-    "mtime": 1792650053.638788,
-    "seen": 1792650527.471376,
-    "ast_hash": "46bc4f77d3b71153d2dfe29472459466",
+    "mtime": 1794242243.7059538,
+    "seen": 1794242339.371714,
+    "ast_hash": "ccc2a165e22501ad9a84e209b1b42be9",
     "semantic_hash": ""
   },
   "tests/test_api.py": {
-    "mtime": 1792649987.05861,
-    "seen": 1792650527.471377,
-    "ast_hash": "80fd0a75f132b4664332bc2c25d65e00",
+    "mtime": 1794240829.5935159,
+    "seen": 1794240979.9898372,
+    "ast_hash": "2d55494f1f32eab2400b45fa69faac29",
     "semantic_hash": ""
   },
   "tests/test_memory.py": {
-    "mtime": 1792650339.4439363,
-    "seen": 1792650527.4713778,
-    "ast_hash": "7dff027bfc1a96630f1e6e9b72c9e51e",
+    "mtime": 1794242259.9410126,
+    "seen": 1794242339.371719,
+    "ast_hash": "fbb4e864fd211e41db248e90781f7a6b",
     "semantic_hash": ""
   },
   "tests/test_ollama.py": {
@@ -108,45 +108,87 @@
     "semantic_hash": ""
   },
   "tests/test_ui.py": {
-    "mtime": 1792650339.4447258,
-    "seen": 1792650527.471382,
-    "ast_hash": "9201c079d26e194a9b940297ab96b81a",
+    "mtime": 1794240829.294426,
+    "seen": 1794240979.989844,
+    "ast_hash": "ef7c5ec07efa1d36ed9b52d65d977a9a",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792650804.0390327,
-    "seen": 1792650809.183022,
-    "ast_hash": "9685a20a13c85613849c76d1b4dbc46b",
+    "mtime": 1794242325.9171438,
+    "seen": 1794242339.371727,
+    "ast_hash": "babd574c1c83773373331c8ac8374b23",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
-    "mtime": 1792649416.2106533,
-    "seen": 1792650527.471384,
-    "ast_hash": "f6ec126ed10531ceeba88662dde7be92",
+    "mtime": 1794240914.7142231,
+    "seen": 1794240979.989849,
+    "ast_hash": "c45ab2706fd53bb08d8d5674cae0290a",
     "semantic_hash": ""
   },
   "docs/MEMORY_LIFECYCLE.md": {
-    "mtime": 1792650804.0394714,
-    "seen": 1792650809.183029,
-    "ast_hash": "16f1859f111a784a4c8c9307461a451e",
+    "mtime": 1794242325.9166858,
+    "seen": 1794242339.371733,
+    "ast_hash": "805f4d296b79d6dfb2c60035bb05b969",
     "semantic_hash": ""
   },
   "docs/MEMORY_RESEARCH.md": {
-    "mtime": 1792649416.2109516,
-    "seen": 1792650527.471387,
-    "ast_hash": "70919e159586089e9ed2f995185e9b36",
+    "mtime": 1793084305.2708395,
+    "seen": 1794240979.989853,
+    "ast_hash": "a30bd07f329265f4aa2b21a7c11843f0",
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-10-22-memory-mvp.md": {
-    "mtime": 1792650804.039912,
-    "seen": 1792650809.1830342,
-    "ast_hash": "24c2dc0c2bf78ed4e11aca6e99ffad6b",
+    "mtime": 1792682729.2770994,
+    "seen": 1794240979.9898539,
+    "ast_hash": "e36a945c72a2dee717d5b6a10e0bc1de",
     "semantic_hash": ""
   },
   "docs/EVALUATION.md": {
-    "mtime": 1792650689.9787567,
-    "seen": 1792650809.183027,
-    "ast_hash": "fdd72d9d1025227abc3b6ca6b0ffcb06",
+    "mtime": 1794242325.915998,
+    "seen": 1794242339.371731,
+    "ast_hash": "35f796b51fa16d69e8ed08ed7efc4a70",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/eval_cases.json": {
+    "mtime": 1794242325.9177098,
+    "seen": 1794242339.371697,
+    "ast_hash": "7edc14f09910c149969a73530008c6a0",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/evaluation.py": {
+    "mtime": 1794240829.5935163,
+    "seen": 1794240979.9898229,
+    "ast_hash": "4615d36c36c25c483f9c03c9952b2eaf",
+    "semantic_hash": ""
+  },
+  "tests/test_evaluation.py": {
+    "mtime": 1794240794.5398207,
+    "seen": 1794240979.989839,
+    "ast_hash": "9325e02dbc73867a774ff6e63499db54",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1794229565.4149456,
+    "seen": 1794240979.989845,
+    "ast_hash": "42496294255301e5dac2779b7e86c2b5",
+    "semantic_hash": ""
+  },
+  "docs/AGENT_RESEARCH_2026-11-09.md": {
+    "mtime": 1794236357.5964963,
+    "seen": 1794240979.9898481,
+    "ast_hash": "1f00f02946a1a5d805b1e9864af07f13",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-11-09-memory-reliability.md": {
+    "mtime": 1794242325.9179826,
+    "seen": 1794242339.3717382,
+    "ast_hash": "833606a2ef1f423a05c8d0ae1a83dca4",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-11-09-memory-reliability-design.md": {
+    "mtime": 1794242325.91747,
+    "seen": 1794242339.371739,
+    "ast_hash": "b2f7524b7ae1b81d378965cd05cc3694",
     "semantic_hash": ""
   }
 }

@@ -2,23 +2,28 @@
 
 A local research MVP for remembering selected user facts across conversations and restarts. The focus is **agent memory**: extraction, consent, persistence, semantic retrieval, correction, forgetting, isolation, and evaluation.
 
-Python + FastAPI + LangGraph + Ollama + SQLite + Streamlit. SQLite stores structured memories and their embeddings together; cosine search avoids a second database for a small local profile. No cloud account or API key is required.
+Python + FastAPI + LangGraph + Ollama + SQLite + Streamlit. SQLite stores structured memories, supporting quotes, embeddings, and an FTS5 keyword index. No cloud account or API key is required.
 
 ## Features and boundaries
 
 - Multiple conversation sessions with bounded, persistent recent history.
 - Opt-in extraction of useful facts/preferences/goals from the latest user message.
-- Persistent memories with user ownership, keys, types, source session, and timestamps.
-- Semantic retrieval with configurable threshold/top k and inspectable records/scores/events.
+- Persistent memories with user ownership, keys, types, source session, supporting quote, and timestamps.
+- An essential `response_language` profile supplied on every turn, including unrelated questions.
+- Keyword/vector retrieval with configurable cosine threshold/top k and inspectable ranking/events.
 - View/add/edit/delete memory, exact deduplication, key-based updates, explicit forget commands.
 - Separate local user namespaces, basic sensitivity checks, no-storage requests, and data deletion.
-- Model-independent tests and a separate opt-in live Ollama evaluation.
+- Model-independent tests and a paired English/Vietnamese evaluation against history-only chat.
 
 **Local prototype:** selecting a user ID is impersonation, not authentication. Bind services to loopback and run one backend worker. Updating/deleting a memory clears that user's chat histories so stale facts cannot return through old context.
+
+Corrections/deletion also clear the user's source quotes, since a quote attached to another fact could repeat forgotten information. Surviving facts remain saved; a fresh extraction can attach new evidence.
 
 ## Prerequisites and installation
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Ollama](https://ollama.com/download). The project selects Python 3.12; uv provisions it if needed. Project metadata supports Python 3.11–3.13.
+
+SQLite must include FTS5 (available in the tested uv Python distribution). On startup, existing databases gain evidence/search tables and a keyword index of existing records. IDs, timestamps, histories, and embeddings remain intact; older memories have no supporting quote. No re-embedding is required for this update.
 
 From the repository root:
 
@@ -56,8 +61,8 @@ Environment variables override `.env`. `.env` and local data are ignored by Git;
 | `EMBEDDING_MODEL` | `nomic-embed-text` | Semantic embeddings. |
 | `DATABASE_PATH` | `data/assistant.sqlite3` | Persistent memory/history file, relative to working directory. |
 | `HISTORY_TURNS` | `6` | Retained complete turns, range 1–20. |
-| `MEMORY_TOP_K` | `4` | Maximum retrieved records, range 1–10. |
-| `MEMORY_MIN_SCORE` | `0.25` | Cosine cutoff; requires real-data calibration. |
+| `MEMORY_TOP_K` | `4` | Maximum search results, range 1–10; the essential profile is additional and deduplicated in context. |
+| `MEMORY_MIN_SCORE` | `0.25` | Cosine cutoff for the semantic branch; keyword matches can fall below it. Requires calibration. |
 | `REQUEST_TIMEOUT_SECONDS` | `120` | Timeout per Ollama request, >0–600 seconds. |
 | `BACKEND_URL` | `http://127.0.0.1:8000` | API URL used by Streamlit. |
 
@@ -111,13 +116,22 @@ uv run pytest tests/test_agent.py -k scenario -v
 
 Actual results, the full manual demo, limitations, and research questions are in [EVALUATION.md](docs/EVALUATION.md).
 
+Run the paired synthetic evaluation after starting Ollama:
+
+```bash
+uv run python -m personal_assistant.evaluation --split dev --output data/memory-dev.json
+uv run python -m personal_assistant.evaluation --split test --output data/memory-test.json
+```
+
+The 14-case corpus has 2 development and 12 test cases. Both history-only and memory-enabled arms replay the same messages using the same models in temporary databases; the configured personal database is never opened. Reports include final-fact matching heuristics, supplied-context recall, privacy/deletion checks, call timings, character counts, model digests, and answers with human grading rubrics. `answer_grade` stays null until reviewed. Character counts are not token counts, and these small synthetic tests do not establish general model quality.
+
 ## Example conversations
 
 With automatic saving enabled:
 
 1. `alice`, conversation 1: "I am learning Python and I prefer explanations in Vietnamese."
 2. Inspect `response_language` and `learning_goal`. Start a new conversation or restart the backend with the same database.
-3. "Can you explain decorators?" Inspect the retrieved Vietnamese preference; the expected live answer is in Vietnamese.
+3. "How far away is the Moon?" Inspect `profile_memories`: the Vietnamese preference is supplied even when search finds no related fact. The expected live answer is in Vietnamese. A current request to answer in English takes priority.
 4. "I used to prefer Python, but now I prefer Java." Inspect `programming_language_preference`; future recall should use Java.
 5. "Forget my programming language preference." Its record/vector disappear and all Alice's chat histories clear. The distinct `learning_goal=Learning Python` may remain.
 6. Alice: "My favorite editor is VS Code." Switch to `bob`: "What is my favorite editor?" No Alice memory should be retrieved.
@@ -135,8 +149,10 @@ src/personal_assistant/
   config.py       Environment settings
   models.py       Memory/extraction/chat schemas
   extraction.py   Evidence checks and explicit forget targets
-  memory.py       Sensitivity checks and semantic retrieval
-  store.py        SQLite CRUD, transactions, bounded histories
+  memory.py       Sensitivity checks and keyword/vector rank fusion
+  store.py        SQLite CRUD, evidence, FTS5 index, bounded histories
+  evaluation.py   Paired history-only/memory evaluation CLI
+  eval_cases.json Synthetic English/Vietnamese development/test cases
 streamlit_app.py  Chat, sessions, memory editor, retrieval debugger
 tests/            Independent lifecycle tests and opt-in live evaluation
 docs/             Research, architecture, lifecycle, evaluation, plan

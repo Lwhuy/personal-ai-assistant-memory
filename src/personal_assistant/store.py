@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
+import unicodedata
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
 from personal_assistant.models import Memory, MemoryInput
+
+MEMORY_SELECT = """SELECT memories.*,
+    (SELECT source_quote FROM memory_evidence WHERE memory_id=memories.id) AS source_quote
+    FROM memories"""
 
 
 def normalized(text: str) -> str:
@@ -52,8 +58,49 @@ class MemoryStore:
                 raise ValueError(
                     "Changed embedding model: use a new database or re-embed memories."
                 )
+            self._initialize_search(db)
         if new_file:
             self.path.chmod(0o600)
+
+    @staticmethod
+    def _initialize_search(db):
+        needs_backfill = not db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='memory_fts'"
+        ).fetchone()
+        # Side tables keep the original ten-column memories contract usable by older writers.
+        db.executescript("""
+            BEGIN IMMEDIATE;
+            CREATE TABLE IF NOT EXISTS memory_evidence (
+                memory_id TEXT PRIMARY KEY REFERENCES memories(id) ON DELETE CASCADE,
+                source_quote TEXT NOT NULL
+            );
+            CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
+                key, content, content='memories', content_rowid='rowid',
+                tokenize='unicode61 remove_diacritics 2'
+            );
+            DROP TRIGGER IF EXISTS memories_search_delete;
+            DROP TRIGGER IF EXISTS memories_search_update;
+            CREATE TRIGGER IF NOT EXISTS memories_search_insert AFTER INSERT ON memories BEGIN
+                INSERT INTO memory_fts(rowid, key, content)
+                    VALUES (new.rowid, new.key, new.content);
+            END;
+            CREATE TRIGGER IF NOT EXISTS memories_search_delete AFTER DELETE ON memories BEGIN
+                INSERT INTO memory_fts(memory_fts, rowid, key, content)
+                    VALUES ('delete', old.rowid, old.key, old.content);
+                DELETE FROM memory_evidence WHERE memory_id=old.id OR memory_id IN
+                    (SELECT id FROM memories WHERE user_id=old.user_id);
+            END;
+            CREATE TRIGGER IF NOT EXISTS memories_search_update AFTER UPDATE ON memories BEGIN
+                INSERT INTO memory_fts(memory_fts, rowid, key, content)
+                    VALUES ('delete', old.rowid, old.key, old.content);
+                INSERT INTO memory_fts(rowid, key, content)
+                    VALUES (new.rowid, new.key, new.content);
+                DELETE FROM memory_evidence WHERE memory_id=old.id OR memory_id IN
+                    (SELECT id FROM memories WHERE user_id=old.user_id);
+            END;
+        """)
+        if needs_backfill:
+            db.execute("INSERT INTO memory_fts(memory_fts) VALUES ('rebuild')")
 
     @contextmanager
     def connection(self):
@@ -74,21 +121,36 @@ class MemoryStore:
     def list(self, user_id: str) -> list[Memory]:
         with self.connection() as db:
             rows = db.execute(
-                "SELECT * FROM memories WHERE user_id=? ORDER BY created_at, id", (user_id,)
+                MEMORY_SELECT + " WHERE user_id=? ORDER BY created_at, id", (user_id,)
             ).fetchall()
         return [self._memory(row) for row in rows]
 
     def get(self, user_id: str, memory_id: str) -> Memory | None:
         with self.connection() as db:
             row = db.execute(
-                "SELECT * FROM memories WHERE user_id=? AND id=?", (user_id, memory_id)
+                MEMORY_SELECT + " WHERE user_id=? AND id=?", (user_id, memory_id)
             ).fetchone()
         return self._memory(row) if row else None
 
     def vectors(self, user_id: str) -> list[tuple[Memory, list[float]]]:
         with self.connection() as db:
-            rows = db.execute("SELECT * FROM memories WHERE user_id=?", (user_id,)).fetchall()
+            rows = db.execute(MEMORY_SELECT + " WHERE user_id=?", (user_id,)).fetchall()
         return [(self._memory(row), json.loads(row["embedding"])) for row in rows]
+
+    def keyword_search(self, user_id: str, query: str, limit: int) -> list[Memory]:
+        tokens = re.findall(r"[^\W_]+", unicodedata.normalize("NFC", query))[:64]
+        if not tokens:
+            return []
+        expression = " OR ".join(f'"{token}"' for token in tokens)
+        with self.connection() as db:
+            rows = db.execute(
+                MEMORY_SELECT
+                + """ JOIN memory_fts ON memory_fts.rowid=memories.rowid
+                WHERE memory_fts MATCH ? AND memories.user_id=?
+                ORDER BY bm25(memory_fts), memories.id LIMIT ?""",
+                (expression, user_id, limit),
+            ).fetchall()
+        return [self._memory(row) for row in rows]
 
     @staticmethod
     def _dimension(db, vector):
@@ -99,7 +161,13 @@ class MemoryStore:
             raise ValueError("Embedding dimension changed; re-embed with a consistent model.")
 
     def upsert(
-        self, user_id: str, item: MemoryInput, vector: list[float], source_session_id: str | None
+        self,
+        user_id: str,
+        item: MemoryInput,
+        vector: list[float],
+        source_session_id: str | None,
+        *,
+        source_quote: str | None = None,
     ) -> tuple[Memory, str]:
         digest = hashlib.sha256(normalized(item.content).encode()).hexdigest()
         now = datetime.now(UTC).isoformat()
@@ -107,10 +175,10 @@ class MemoryStore:
             db.execute("BEGIN IMMEDIATE")
             self._dimension(db, vector)
             existing = db.execute(
-                "SELECT * FROM memories WHERE user_id=? AND key=?", (user_id, item.key)
+                MEMORY_SELECT + " WHERE user_id=? AND key=?", (user_id, item.key)
             ).fetchone()
             duplicate = db.execute(
-                "SELECT * FROM memories WHERE user_id=? AND content_hash=?", (user_id, digest)
+                MEMORY_SELECT + " WHERE user_id=? AND content_hash=?", (user_id, digest)
             ).fetchone()
             if duplicate:
                 if existing and duplicate["id"] != existing["id"]:
@@ -151,8 +219,13 @@ class MemoryStore:
                         json.dumps(vector),
                     ),
                 )
+            if source_quote is not None:
+                db.execute(
+                    "INSERT INTO memory_evidence(memory_id, source_quote) VALUES (?, ?)",
+                    (memory_id, source_quote),
+                )
             row = db.execute(
-                "SELECT * FROM memories WHERE user_id=? AND id=?", (user_id, memory_id)
+                MEMORY_SELECT + " WHERE user_id=? AND id=?", (user_id, memory_id)
             ).fetchone()
         return self._memory(row), "updated" if existing else "added"
 
@@ -164,7 +237,7 @@ class MemoryStore:
             with self.connection() as db:
                 db.execute("BEGIN IMMEDIATE")
                 row = db.execute(
-                    "SELECT * FROM memories WHERE user_id=? AND id=?", (user_id, memory_id)
+                    MEMORY_SELECT + " WHERE user_id=? AND id=?", (user_id, memory_id)
                 ).fetchone()
                 if row is None:
                     return None
@@ -186,7 +259,7 @@ class MemoryStore:
                 )
                 db.execute("DELETE FROM messages WHERE user_id=?", (user_id,))
                 result = db.execute(
-                    "SELECT * FROM memories WHERE user_id=? AND id=?", (user_id, memory_id)
+                    MEMORY_SELECT + " WHERE user_id=? AND id=?", (user_id, memory_id)
                 ).fetchone()
         except sqlite3.IntegrityError as exc:
             raise ValueError("Another memory already has that key or content.") from exc

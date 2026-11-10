@@ -1,0 +1,194 @@
+{
+  "pyproject.toml": {
+    "mtime": 1792682729.2778583,
+    "seen": 1794240979.989811,
+    "ast_hash": "b7a31eab0e7342bb1cb9c6c1b7872c95",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/__init__.py": {
+    "mtime": 1792649486.0288515,
+    "seen": 1792650527.471361,
+    "ast_hash": "40d1b6b9c83f8b43fa37bb1732bebf68",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/agent.py": {
+    "mtime": 1794240753.5701733,
+    "seen": 1794240979.9898171,
+    "ast_hash": "1141e7b51b0761730c1af2ab076310bd",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/api.py": {
+    "mtime": 1792650103.2282727,
+    "seen": 1792650527.471363,
+    "ast_hash": "745c148e8f646e20b3a4f2356467cd62",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/config.py": {
+    "mtime": 1792649987.0566247,
+    "seen": 1792650527.4713652,
+    "ast_hash": "33cfd9fd30081f1a83943c0e63ed8053",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/extraction.py": {
+    "mtime": 1792650103.226404,
+    "seen": 1792650527.471366,
+    "ast_hash": "9c77e5ea1b2cf66f796b2b21c369c2d9",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/memory.py": {
+    "mtime": 1794240753.5700488,
+    "seen": 1794240979.989826,
+    "ast_hash": "16b806ba08869989e2caadd5258c02d0",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/models.py": {
+    "mtime": 1794240539.5971527,
+    "seen": 1794240979.9898272,
+    "ast_hash": "6f49b03fbbdd6775c5697d5c331b684a",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/provider.py": {
+    "mtime": 1792650103.2271934,
+    "seen": 1792650527.47137,
+    "ast_hash": "19b2fc46133fe5d630d2fc9bd7018df4",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/store.py": {
+    "mtime": 1794240829.293574,
+    "seen": 1794240979.9898298,
+    "ast_hash": "03fa163c364cfd707615bc8413cdcf1e",
+    "semantic_hash": ""
+  },
+  "streamlit_app.py": {
+    "mtime": 1794240753.5697222,
+    "seen": 1794240979.989832,
+    "ast_hash": "83cf368f8613e2d0f62b1e7811af8fb8",
+    "semantic_hash": ""
+  },
+  "tests/__init__.py": {
+    "mtime": 1792649486.0289843,
+    "seen": 1792650527.471374,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "tests/fakes.py": {
+    "mtime": 1792649486.0292013,
+    "seen": 1792650527.471375,
+    "ast_hash": "cdc61ad02e64a8456b9f13ac5e535ea4",
+    "semantic_hash": ""
+  },
+  "tests/test_agent.py": {
+    "mtime": 1794240471.4190931,
+    "seen": 1794240979.989836,
+    "ast_hash": "61de1a7d79bcbd4b422169b0bb72559c",
+    "semantic_hash": ""
+  },
+  "tests/test_api.py": {
+    "mtime": 1794240829.5935159,
+    "seen": 1794240979.9898372,
+    "ast_hash": "2d55494f1f32eab2400b45fa69faac29",
+    "semantic_hash": ""
+  },
+  "tests/test_memory.py": {
+    "mtime": 1794240753.5697095,
+    "seen": 1794240979.9898398,
+    "ast_hash": "dd5b2b8af594b4eb676445155475434f",
+    "semantic_hash": ""
+  },
+  "tests/test_ollama.py": {
+    "mtime": 1792650689.9771597,
+    "seen": 1792650809.183014,
+    "ast_hash": "b51fb4917d9354aef1ef1eebc781a89d",
+    "semantic_hash": ""
+  },
+  "tests/test_provider.py": {
+    "mtime": 1792650053.6390572,
+    "seen": 1792650527.471381,
+    "ast_hash": "02233f6063a7b11420ea827e86c6448a",
+    "semantic_hash": ""
+  },
+  "tests/test_ui.py": {
+    "mtime": 1794240829.294426,
+    "seen": 1794240979.989844,
+    "ast_hash": "ef7c5ec07efa1d36ed9b52d65d977a9a",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1794240914.7134998,
+    "seen": 1794240979.989847,
+    "ast_hash": "382af4899809d83b1146f1bf827d4de8",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE.md": {
+    "mtime": 1794240914.7142231,
+    "seen": 1794240979.989849,
+    "ast_hash": "c45ab2706fd53bb08d8d5674cae0290a",
+    "semantic_hash": ""
+  },
+  "docs/MEMORY_LIFECYCLE.md": {
+    "mtime": 1794240914.7152178,
+    "seen": 1794240979.989852,
+    "ast_hash": "395825f4310b6b2877b010013c9222f7",
+    "semantic_hash": ""
+  },
+  "docs/MEMORY_RESEARCH.md": {
+    "mtime": 1793084305.2708395,
+    "seen": 1794240979.989853,
+    "ast_hash": "a30bd07f329265f4aa2b21a7c11843f0",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-22-memory-mvp.md": {
+    "mtime": 1792682729.2770994,
+    "seen": 1794240979.9898539,
+    "ast_hash": "e36a945c72a2dee717d5b6a10e0bc1de",
+    "semantic_hash": ""
+  },
+  "docs/EVALUATION.md": {
+    "mtime": 1794240956.033603,
+    "seen": 1794240979.989851,
+    "ast_hash": "f09e810cb935c9ffd5fbf44efb53f787",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/eval_cases.json": {
+    "mtime": 1794240829.29398,
+    "seen": 1794240979.989822,
+    "ast_hash": "514e45caf20aa91ebc6ed4b9546d17db",
+    "semantic_hash": ""
+  },
+  "src/personal_assistant/evaluation.py": {
+    "mtime": 1794240829.5935163,
+    "seen": 1794240979.9898229,
+    "ast_hash": "4615d36c36c25c483f9c03c9952b2eaf",
+    "semantic_hash": ""
+  },
+  "tests/test_evaluation.py": {
+    "mtime": 1794240794.5398207,
+    "seen": 1794240979.989839,
+    "ast_hash": "9325e02dbc73867a774ff6e63499db54",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1794229565.4149456,
+    "seen": 1794240979.989845,
+    "ast_hash": "42496294255301e5dac2779b7e86c2b5",
+    "semantic_hash": ""
+  },
+  "docs/AGENT_RESEARCH_2026-11-09.md": {
+    "mtime": 1794236357.5964963,
+    "seen": 1794240979.9898481,
+    "ast_hash": "1f00f02946a1a5d805b1e9864af07f13",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-11-09-memory-reliability.md": {
+    "mtime": 1794240956.034624,
+    "seen": 1794240979.989856,
+    "ast_hash": "0871b6a41258d3ecc26c1d108411b60d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-11-09-memory-reliability-design.md": {
+    "mtime": 1794240418.1782959,
+    "seen": 1794240979.989857,
+    "ast_hash": "5b4ee614416013bf025bd9f71ec98272",
+    "semantic_hash": ""
+  }
+}

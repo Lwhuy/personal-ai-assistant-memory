@@ -216,3 +216,60 @@ def test_conflicting_candidates_in_one_extraction_are_not_applied(assistant):
     result = assistant.chat("alice", "one", text, remember=True)
     assert assistant.store.list("alice") == []
     assert result.warnings
+
+
+def test_essential_profile_survives_unrelated_query_restart_and_forgetting(assistant):
+    text = "Tôi muốn nhận câu trả lời bằng tiếng Việt."
+    assistant.provider.extractions[text] = [
+        candidate("response_language", "Prefers Vietnamese", text)
+    ]
+    assistant.chat("alice", "one", text, remember=True)
+    reopened = Assistant(assistant.settings, FakeProvider())
+    result = reopened.chat("alice", "two", "How far away is the Moon?")
+    assert result.retrieved_memories == []
+    assert [m.key for m in result.profile_memories] == ["response_language"]
+    assert result.profile_memories[0].source_quote == text
+    context = json.loads(reopened.provider.messages[-1][1]["content"].split("\n", 1)[1])
+    assert context[0]["content"] == "Prefers Vietnamese"
+    bob = reopened.chat("bob", "two", "How far away is the Moon?")
+    assert bob.profile_memories == []
+    assert "Vietnamese" not in json.dumps(reopened.provider.messages[-1])
+    reopened.chat("alice", "three", "Forget my response language.")
+    result = reopened.chat("alice", "four", "How far away is the Moon?")
+    assert result.profile_memories == []
+    assert "Vietnamese" not in json.dumps(reopened.provider.messages[-1])
+
+
+def test_profile_and_search_context_is_deduplicated_and_current_request_is_last(assistant):
+    saved, _ = assistant.memory.save(
+        "alice", MemoryInput(key="response_language", content="Prefers Vietnamese")
+    )
+    text = "Explain decorators in English for this answer."
+    result = assistant.chat("alice", "new", text)
+    assert result.profile_memories[0].id == saved.id
+    assert result.retrieved_memories[0].memory.id == saved.id
+    prompt = assistant.provider.messages[-1]
+    context = json.loads(prompt[1]["content"].split("\n", 1)[1])
+    assert len(context) == 1
+    assert context[0]["id"] == saved.id
+    assert prompt[-1]["content"] == text
+    assert "takes priority" in prompt[0]["content"]
+
+
+def test_forgetting_removes_shared_source_quote_from_surviving_profile(assistant):
+    text = "My favorite editor is Neovim and I prefer Vietnamese."
+    assistant.provider.extractions[text] = [
+        candidate("editor_preference", "Favorite editor is Neovim", text),
+        candidate("response_language", "Prefers Vietnamese", text),
+    ]
+    assistant.chat("alice", "intro", text, remember=True)
+    assert len(assistant.store.list("alice")) == 2
+    assistant.chat("alice", "forget", "Forget my editor preference.")
+    remaining = assistant.store.list("alice")
+    assert len(remaining) == 1
+    assert remaining[0].key == "response_language"
+    assert remaining[0].source_quote is None
+    reopened = Assistant(assistant.settings, FakeProvider())
+    result = reopened.chat("alice", "next", "What is my favorite editor?")
+    assert result.profile_memories[0].content == "Prefers Vietnamese"
+    assert "Neovim" not in json.dumps(reopened.provider.messages[-1])

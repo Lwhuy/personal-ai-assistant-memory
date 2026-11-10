@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import httpx
@@ -6,7 +7,7 @@ from streamlit.testing.v1 import AppTest
 
 from personal_assistant.api import create_app
 from personal_assistant.config import Settings
-from tests.fakes import FakeProvider
+from tests.fakes import FakeProvider, candidate
 
 
 def test_streamlit_chat_and_explicit_memory(tmp_path, monkeypatch):
@@ -42,6 +43,16 @@ def test_streamlit_chat_and_explicit_memory(tmp_path, monkeypatch):
             client.get("/users/local-user/memories").json()[0]["content"]
             == "Favorite editor is VS Code"
         )
+        text = "I prefer Vietnamese."
+        client.app.state.assistant.provider.extractions[text] = [
+            candidate("response_language", "Prefers Vietnamese", text)
+        ]
+        app.sidebar.checkbox(key="consent_local-user").set_value(True)
+        app.chat_input[0].set_value(text).run()
+        assert not app.exception
+        assert any(element.value == text for element in app.text)
+        trace = json.loads(app.json[0].value)
+        assert trace["profile_memories"][0]["source_quote"] == text
         app.text_area(key="new_memory_content").set_value("Alice private draft").run()
         app.sidebar.text_input[0].set_value("bob").run()
         assert not app.exception

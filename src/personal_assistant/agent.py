@@ -105,7 +105,9 @@ class Assistant:
                 result.warnings.append("Unsupported extraction candidates were rejected.")
             for candidate in candidates:
                 item = MemoryInput.model_validate(candidate.model_dump(exclude={"source_quote"}))
-                memory, action = self.memory.save(request.user_id, item, request.session_id)
+                memory, action = self.memory.save(
+                    request.user_id, item, request.session_id, source_quote=candidate.source_quote
+                )
                 result.memory_events.append(
                     MemoryEvent(action=action, key=memory.key, memory_id=memory.id)
                 )
@@ -118,6 +120,11 @@ class Assistant:
     def _retrieve_memory(self, state: TurnState):
         if not state["skip_model"]:
             request = state["request"]
+            state["result"].profile_memories = [
+                memory
+                for memory in self.store.list(request.user_id)
+                if memory.key == "response_language"
+            ]
             state["result"].retrieved_memories = self.memory.search(
                 request.user_id, request.message
             )
@@ -127,9 +134,16 @@ class Assistant:
         request, result = state["request"], state["result"]
         if state["skip_model"]:
             return {"result": result}
+        context = {memory.id: memory for memory in result.profile_memories}
+        context.update({hit.memory.id: hit.memory for hit in result.retrieved_memories})
         memory_data = [
-            {"id": hit.memory.id, "key": hit.memory.key, "content": hit.memory.content}
-            for hit in result.retrieved_memories
+            {
+                "id": memory.id,
+                "key": memory.key,
+                "content": memory.content,
+                "source_quote": memory.source_quote,
+            }
+            for memory in context.values()
         ]
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},

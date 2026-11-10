@@ -9,8 +9,8 @@ flowchart TD
   API --> G[LangGraph workflow]
   G --> W[Consent / forget handling / extraction / validation]
   W --> M[User-scoped memory service]
-  M --> DB[(SQLite: memories + embeddings)]
-  G --> R[User-scoped semantic retrieval: threshold + top k]
+  M --> DB[(SQLite: memories + evidence + embeddings + FTS5)]
+  G --> R[User-scoped essential profile + keyword/vector retrieval]
   R --> DB
   R --> C[Bounded history + untrusted memory context]
   C --> L[Ollama chat]
@@ -29,7 +29,8 @@ flowchart TD
 | Agent | LangGraph `StateGraph` | Explicit observable write/read/respond/save stages; no tools or autonomous loops needed. |
 | LLM / embedder | Ollama through HTTPX | Local by default, configurable independent chat and embedding models, no key required. |
 | Long-term memory | Application-owned SQLite store | Structured upsert, ownership predicates, vector and record deleted in one transaction. This is **not** LangGraph's `BaseStore` implementation. |
-| Semantic search | Stored dense vectors + stdlib cosine | Equivalent semantic search for small profiles; linear scan per user. No Chroma service, separate index, or embedding download in tests. |
+| Retrieval | Dense vectors + stdlib cosine + SQLite FTS5/BM25 | Reciprocal rank fusion, thresholded semantic candidates, bounded top k. No separate database or embedding download in tests. |
+| Essential profile | Current `response_language` record | Supplied regardless of question similarity, deduplicated against search hits, and kept outside the system role. |
 | Session state | Separate SQLite sessions/history | Bounded and restart-safe; avoids checkpoint snapshots retaining deleted memory. |
 | UI | Streamlit | Minimal chat and memory CRUD/debugging interface. |
 | Verification | pytest, deterministic external-provider fake; opt-in Ollama test | Lifecycle correctness is independent from probabilistic model quality. |
@@ -42,7 +43,7 @@ Official compatibility references: [LangGraph installation](https://docs.langcha
 
 `api.py` owns HTTP contracts; `agent.py` the graph; `provider.py` external calls; `extraction.py` extraction and forget intent; `memory.py` validation/retrieval; `store.py` transactions and bounded history; `models.py` schemas; `config.py` environment settings. `streamlit_app.py` only calls the API.
 
-A memory contains UUID `id`, `user_id`, canonical `key`, `content`, `memory_type` (`semantic`, `episodic`, `procedural`), optional `source_session_id`, and UTC creation/update timestamps. A separate vector column belongs to the same row. A unique `(user_id, key)` identifies a mutable fact slot, for example `programming_language_preference`. A normalized content hash prevents identical facts under different keys. A database metadata row records the embedding model identity; changing models requires a new database or explicit re-embedding, not silently mixing vectors.
+A memory contains UUID `id`, `user_id`, canonical `key`, `content`, `memory_type` (`semantic`, `episodic`, `procedural`), optional `source_session_id` and `source_quote`, and UTC creation/update timestamps. A vector column belongs to the memory row; supporting quotes live in an associated evidence table. A unique `(user_id, key)` identifies a mutable fact slot, for example `programming_language_preference`. A normalized content hash prevents identical facts under different keys. A database metadata row records the embedding model identity; changing models requires a new database or explicit re-embedding, not silently mixing vectors.
 
 Sessions use composite `(user_id, session_id)` identity. Histories store only a configurable number of complete user/assistant turns. Graph state lives for one request; there is no durable checkpoint or prompt archive containing forgotten facts.
 
@@ -50,14 +51,14 @@ Sessions use composite `(user_id, session_id)` identity. Histories store only a 
 
 1. Validate request lengths and local identity; serialize mutations/chat in the single backend process.
 2. Handle an explicit forget command before any LLM call. Otherwise extract only when the request opts in.
-3. Query only the selected user's records; embed the question and rank by cosine similarity, threshold, and top k.
+3. Load that user's essential response-language profile. Embed the question; fuse thresholded cosine ranks with user-filtered keyword ranks, returning at most top k search hits.
 4. Build a fixed system instruction, separate untrusted JSON memory context, bounded history, and latest user message.
-5. Generate an answer and return the exact injected memory records/scores, lifecycle events, and warnings. Retrieved means supplied to the model, not proof the model reasoned from each record.
+5. Generate an answer and return `profile_memories`, `retrieved_memories` with cosine/fusion scores, lifecycle events, and warnings. The context deduplicates records by ID. Supplied context does not prove the model reasoned from it.
 6. Save the bounded turn. Recognized sensitive input is not retained in history.
 
 ## Write flow
 
-Latest user statement → explicit consent → sensitive-data gate → schema extraction → supporting quote validation → vector generation → user-scoped deduplication / key-based upsert → atomic SQLite commit. Questions and assistant text are not sources of new facts. Extraction failure skips writes and exposes a warning; a chat-provider failure returns an actionable error. Memory writes happen before response generation, so a failed answer can still leave a committed memory; inspect CRUD before retrying.
+Latest user statement → explicit consent → sensitive-data gate → schema extraction → supporting quote validation → vector generation → user-scoped deduplication / key-based upsert with quote and keyword index → atomic SQLite commit. Questions and assistant text are not sources of new facts. Extraction failure skips writes and exposes a warning; a chat-provider failure returns an actionable error. Memory writes happen before response generation, so a failed answer can still leave a committed memory; inspect CRUD before retrying.
 
 The newest assertion for an existing key wins and keeps its ID/creation timestamp. Updates and deletion clear **all that user's history messages**, preventing stale answers and re-exposure of forgotten content. Sessions remain selectable, now empty. This deliberate tradeoff favors predictable memory correctness over retaining every chat turn.
 
